@@ -57,6 +57,11 @@ private:
 
 	FVector Velocity;
 
+	UPROPERTY(Replicated)
+	FVector ReplicatedLocation;
+	UPROPERTY(Replicated)
+	FRotator ReplicatedRotation;
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 

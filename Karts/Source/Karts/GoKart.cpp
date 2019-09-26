@@ -8,6 +8,7 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "UnrealNetwork.h"
+#include "GameFramework/GameStateBase.h"
 
 // Sets default values
 AGoKart::AGoKart()
@@ -84,9 +85,14 @@ void AGoKart::OnRep_ServerState()
 	Velocity = ServerState.Velocity;
 	
 	ClearAcknowledgedMoves(ServerState.LastMove);
+
+	for (const FGoKartMove& Move : UnacknowledgedMoves)
+	{
+		SimulateMove(Move);
+	}
 }
 
-void AGoKart::SimulateMove(FGoKartMove Move)
+void AGoKart::SimulateMove(const FGoKartMove& Move)
 {
 	FVector Force = GetActorForwardVector() * MaxDrivingForce * Move.Throttle;
 
@@ -108,7 +114,7 @@ FGoKartMove AGoKart::CreateMove(float DeltaTime)
 	Move.DeltaTime = DeltaTime;
 	Move.SteeringThrow = SteeringThrow;
 	Move.Throttle = Throttle;
-	Move.Time = GetWorld()->TimeSeconds;
+	Move.Time = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 
 	return Move;
 }

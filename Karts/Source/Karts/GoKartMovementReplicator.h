@@ -22,6 +22,23 @@ struct FGoKartState
 	FGoKartMove LastMove;
 };
 
+struct FHermiteCubicSpline
+{
+	FVector StartLocation;
+	FVector StartDerivative;
+	FVector TargetLocation;
+	FVector TargetDerivative;
+
+	FVector InterpolateLocation(float LerpRatio) const
+	{
+		return FMath::CubicInterp(StartLocation, StartDerivative, TargetLocation, TargetDerivative, LerpRatio);
+	}
+	FVector InterpolateDerivative(float LerpRatio) const
+	{
+		return FMath::CubicInterpDerivative(StartLocation, StartDerivative, TargetLocation, TargetDerivative, LerpRatio);
+	}
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KARTS_API UGoKartMovementReplicator : public UActorComponent
 {
@@ -45,6 +62,16 @@ private:
 	void UpdateServerState(const FGoKartMove& Move);
 
 	void ClientTick(float DeltaTime);
+
+	FHermiteCubicSpline CreateSpline();
+
+	float VelocityToDerivative();
+
+	void InterpolateRotation(float LerpRatio);
+
+	void InterpolateVelocity(const FHermiteCubicSpline &Spline, float LerpRatio, float VelocityToDerivative);
+
+	void InterpolateLocation(const FHermiteCubicSpline &Spline, float LerpRatio);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_SendMove(FGoKartMove Move);
